@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>meowmeow
+</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  #container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    height: 500px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #messages {
+    list-style-type: none;
+    padding: 20px;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  #form {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+  }
+  
+  #input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    outline: none;
+  }
+  
+  #input:focus {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+  
+  #submit {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 20px;
+    background-color: #4CAF50;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  #submit:hover {
+    background-color: #45a049;
+  }
+  
+  .username {
+    font-weight: bold;
+  }
+
+  #admin-panel {
+    padding: 20px;
+    background-color: #f0f0f0;
+    display: none;
+  }
+</style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Madimi+One&display=swap');
+</style>
+</head>
+<body>
+<div id="container">
+  <ul id="messages"></ul>
+  <div id="admin-panel">
+    <h3>Admin Panel</h3>
+    <form id="admin-form" action="">
+      <input id="admin-user" type="text" placeholder="Username">
+      <input id="admin-pass" type="password" placeholder="Password">
+      <button id="admin-submit">Login</button>
+    </form>
+  </div>
+  <div id="user-info" style="padding: 10px;"></div>
+  <form id="form" action="">
+    <input id="input" autocomplete="off">
+    <button id="submit">Send</button>
+  </form>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const form = document.getElementById('form');
+  const input = document.getElementById('input');
+  const messages = document.getElementById('messages');
+  const adminPanel = document.getElementById('admin-panel');
+  const adminForm = document.getElementById('admin-form');
+  const adminUser = document.getElementById('admin-user');
+  const adminPass = document.getElementById('admin-pass');
+  const adminSubmit = document.getElementById('admin-submit');
+  const userInfoDiv = document.getElementById('user-info');
+
+  let isAdmin = false;
+  let userName = '';
+
+  // Add event listener for submitting the form to send a message
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    sendMessage();
+  });
+
+  // Handle receiving chat history
+  socket.on('chat history', (history) => {
+    history.forEach((msg) => {
+      const item = document.createElement('li');
+      item.innerHTML = msg; // Use innerHTML to render HTML elements within messages
+      messages.appendChild(item);
+    });
+    // Automatically scroll to the bottom
+    messages.scrollTop = messages.scrollHeight;
+  });
+
+  // Handle receiving chat messages
+  socket.on('chat message', (msg) => {
+    const item = document.createElement('li');
+    item.innerHTML = msg; // Use innerHTML to render HTML elements within messages
+    messages.appendChild(item);
+    // Automatically scroll to the bottom
+    messages.scrollTop = messages.scrollHeight;
+  });
+
+  // Function to send a message
+  function sendMessage() {
+    if (input.value) {
+      let message = input.value;
+      if (isAdmin) {
+        message = `<span style="color: red;">ADMIN:</span> ${message}`;
+      } else {
+        // Retrieve user color from cookie
+        const userColor = getUserColor(userName);
+        message = `<span class="username" style="color: ${userColor};">${userName}:</span> ${message}`;
+      }
+      socket.emit('chat message', message);
+      input.value = '';
+    }
+  }
+
+  // Function to display user information
+  function displayUserInfo(userName, userColor) {
+    userInfoDiv.innerHTML = `Logged in as: <span class="username" style="color: ${userColor};">${userName}</span>`;
+  }
+
+  // Function to get the value of a cookie
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  // Function to generate a random color
+  function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  // Function to retrieve the color associated with a user from the cookie
+  function getUserColor(userName) {
+    const storedUserInfo = getCookie('userInfo');
+    if (storedUserInfo) {
+      const userInfoArray = storedUserInfo.split('|');
+      if (userInfoArray[0] === userName) {
+        return userInfoArray[1];
+      }
+    }
+    // If color is not found, return black as default
+    return 'black';
+  }
+
+  // Initialize the chat app
+  window.onload = function() {
+    // Check for existing user information in cookies
+    const storedUserInfo = getCookie('userInfo');
+    if (storedUserInfo) {
+      const userInfoArray = storedUserInfo.split('|');
+      userName = userInfoArray[0];
+      displayUserInfo(userName);
+    } else {
+      // Prompt user for name if not found in cookies
+      do {
+        userName = prompt('Please enter your name:');
+      } while (!userName);
+      // Generate a random color for the user
+      const userColor = getRandomColor();
+      // Store user information in cookies
+      document.cookie = `userInfo=${userName}|${userColor}`;
+      displayUserInfo(userName, userColor);
+    }
+  };
+
+</script>
+</body>
+</html>

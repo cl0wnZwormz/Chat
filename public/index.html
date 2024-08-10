@@ -1,220 +1,325 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>meowmeow
-</title>
-<style>
-  body {
-    font-family: sans-serif;
-    background-color: #f8f8f8;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
-  
-  #container {
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 400px;
-    height: 500px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  #messages {
-    list-style-type: none;
-    padding: 20px;
-    margin: 0;
-    overflow-y: auto;
-    flex: 1;
-  }
-  
-  #form {
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f0f0f0;
-  }
-  
-  #input {
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 20px;
-    outline: none;
-  }
-  
-  #input:focus {
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-  }
-  
-  #submit {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 20px;
-    background-color: #4CAF50;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  #submit:hover {
-    background-color: #45a049;
-  }
-  
-  .username {
-    font-weight: bold;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gravity Falls Chat</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/dist/emoji-picker-element.css">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #d7c1a0; /* Background color reminiscent of Gravity Falls */
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-image: url('./bg.jpg'); /* Placeholder image URL */
+      background-size: cover;
+      background-repeat: no-repeat;
+      position: relative; /* Ensure absolute positioning works */
+    }
 
-  #admin-panel {
-    padding: 20px;
-    background-color: #f0f0f0;
-    display: none;
-  }
-</style>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Madimi+One&display=swap');
-</style>
+    #sign-wrapper {
+      position: absolute;
+      top: 20px; /* Adjust this value as needed */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1; /* Ensure it's above other elements */
+      text-align: center; /* Center the sign horizontally */
+    }
+
+    #sign {
+      width: 130px; /* Larger width for the sign */
+      height: auto; /* Maintain aspect ratio */
+      padding-bottom: 30px;
+    }
+
+    #container {
+      background-color: #ffffff;
+      border-radius: 15px; /* Slightly more rounded corners */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      width: 600px; /* Increased width for a larger chat area */
+      height: 700px; /* Increased height for a larger chat area */
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative; /* For proper stacking context */
+    }
+
+    #online-users {
+      padding: 15px;
+      background-color: #f0e4d7; /* Slightly lighter background */
+      border-bottom: 1px solid #ddd;
+      font-family: 'Comic Sans MS', sans-serif; /* Fun, whimsical font */
+      font-size: 18px; /* Larger font size */
+    }
+
+    #messages {
+      list-style-type: none;
+      padding: 20px;
+      margin: 0;
+      overflow-y: auto;
+      flex: 1;
+      font-family: 'Comic Sans MS', sans-serif;
+      color: #333;
+      font-size: 16px; /* Larger font size */
+    }
+
+    #form {
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f5eade;
+      border-top: 1px solid #ddd;
+      font-family: 'Comic Sans MS', sans-serif;
+    }
+
+    #input {
+      flex: 1;
+      padding: 12px;
+      border: 2px solid #333;
+      border-radius: 20px;
+      outline: none;
+      font-size: 18px; /* Larger font size */
+    }
+
+    #input:focus {
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+    }
+
+    #file-input {
+      display: none;
+    }
+
+    #submit {
+      padding: 12px 25px; /* Larger padding */
+      border: none;
+      border-radius: 20px;
+      background-color: #aa8c70;
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-family: 'Comic Sans MS', sans-serif;
+      font-size: 16px; /* Larger font size */
+    }
+
+    #submit:hover {
+      background-color: #6b553b;
+    }
+
+    #etogglebtn {
+      cursor: pointer;
+      margin-right: 15px; /* Larger margin */
+      font-size: 28px; /* Larger emoji icon */
+    }
+
+    .username {
+      font-weight: bold;
+      color: #ff4500; /* Orange-red color for usernames */
+    }
+
+    .link {
+      color: #1e90ff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .tooltip {
+      position: absolute;
+      z-index: 1000;
+    }
+    .tooltip:not(.shown) {
+      display: none;
+    }
+  </style>
 </head>
 <body>
-<div id="container">
-  <ul id="messages"></ul>
-  <div id="admin-panel">
-    <h3>Admin Panel</h3>
-    <form id="admin-form" action="">
-      <input id="admin-user" type="text" placeholder="Username">
-      <input id="admin-pass" type="password" placeholder="Password">
-      <button id="admin-submit">Login</button>
+  <div id="sign-wrapper">
+    <img id="sign" src="./sign.png" alt="Sign">
+  </div>
+  <div id="container">
+    <div id="online-users"></div>
+    <ul id="messages"></ul>
+    <div id="user-info" style="padding: 15px;"></div>
+    <form id="form" action="">
+      <button type="button" id="etogglebtn">😊</button>
+      <div class="tooltip" role="tooltip">
+        <emoji-picker></emoji-picker>
+      </div>
+      <input id="input" autocomplete="off">
+      <input id="file-input" type="file" accept="image/*">
+      <button id="submit">Send</button>
     </form>
   </div>
-  <div id="user-info" style="padding: 10px;"></div>
-  <form id="form" action="">
-    <input id="input" autocomplete="off">
-    <button id="submit">Send</button>
-  </form>
-</div>
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  const socket = io();
-  const form = document.getElementById('form');
-  const input = document.getElementById('input');
-  const messages = document.getElementById('messages');
-  const adminPanel = document.getElementById('admin-panel');
-  const adminForm = document.getElementById('admin-form');
-  const adminUser = document.getElementById('admin-user');
-  const adminPass = document.getElementById('admin-pass');
-  const adminSubmit = document.getElementById('admin-submit');
-  const userInfoDiv = document.getElementById('user-info');
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js';
+    import * as Popper from 'https://cdn.jsdelivr.net/npm/@popperjs/core@^2/dist/esm/index.js';
+    import insertText from 'https://cdn.jsdelivr.net/npm/insert-text-at-cursor@0.3.0/index.js';
+  
+    // Initialize Popper for the tooltip
+    const button = document.getElementById('etogglebtn');
+    const tooltip = document.querySelector('.tooltip');
+    Popper.createPopper(button, tooltip);
 
-  let isAdmin = false;
-  let userName = '';
-
-  // Add event listener for submitting the form to send a message
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    sendMessage();
-  });
-
-  // Handle receiving chat history
-  socket.on('chat history', (history) => {
-    history.forEach((msg) => {
-      const item = document.createElement('li');
-      item.innerHTML = msg; // Use innerHTML to render HTML elements within messages
-      messages.appendChild(item);
+    button.onclick = () => {
+      tooltip.classList.toggle('shown');
+    };
+  
+    // Insert emoji into the text input from the tooltip
+    document.querySelector('emoji-picker').addEventListener('emoji-click', e => {
+      const input = document.querySelector('input');
+      insertText(input, e.detail.unicode);
+      // Hide the tooltip after selecting an emoji
+      tooltip.classList.toggle('shown');
     });
-    // Automatically scroll to the bottom
-    messages.scrollTop = messages.scrollHeight;
-  });
+  </script>
+  <script type="module">
 
-  // Handle receiving chat messages
-  socket.on('chat message', (msg) => {
-    const item = document.createElement('li');
-    item.innerHTML = msg; // Use innerHTML to render HTML elements within messages
-    messages.appendChild(item);
-    // Automatically scroll to the bottom
-    messages.scrollTop = messages.scrollHeight;
-  });
+    const socket = io();
+    const form = document.getElementById('form');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+    const fileInput = document.getElementById('file-input');
+    const onlineUsers = document.getElementById('online-users');
+    const emojiPickerButton = document.getElementById('emoji-picker');
+    const userInfoDiv = document.getElementById('user-info');
+    const button = document.querySelector('button');
 
-  // Function to send a message
-  function sendMessage() {
-    if (input.value) {
-      let message = input.value;
-      if (isAdmin) {
-        message = `<span style="color: red;">ADMIN:</span> ${message}`;
+    let userName = '';
+
+    // Remove the emoji picker related code
+    // emojiPickerButton.onclick = () => {
+    //   tooltip.classList.toggle('shown');
+    // };
+
+    // Add event listener for submitting the form to send a message
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (fileInput.files.length > 0) {
+        sendImage(fileInput.files[0]);
       } else {
+        sendMessage();
+      }
+    });
+
+    // Handle receiving chat history
+    socket.on('chat history', (history) => {
+      history.forEach((msg) => {
+        addMessageToChat(msg);
+      });
+    });
+
+    // Handle receiving chat messages
+    socket.on('chat message', (msg) => {
+      addMessageToChat(msg);
+    });
+
+    // Handle receiving the list of online users
+    socket.on('online users', (users) => {
+      onlineUsers.innerHTML = `Online: ${users.join(', ')}`;
+    });
+
+    // Function to send a message
+    function sendMessage() {
+      if (input.value) {
+        let message = input.value;
         // Retrieve user color from cookie
         const userColor = getUserColor(userName);
-        message = `<span class="username" style="color: ${userColor};">${userName}:</span> ${message}`;
-      }
-      socket.emit('chat message', message);
-      input.value = '';
-    }
-  }
-
-  // Function to display user information
-  function displayUserInfo(userName, userColor) {
-    userInfoDiv.innerHTML = `Logged in as: <span class="username" style="color: ${userColor};">${userName}</span>`;
-  }
-
-  // Function to get the value of a cookie
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-  }
-
-  // Function to generate a random color
-  function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
-
-  // Function to retrieve the color associated with a user from the cookie
-  function getUserColor(userName) {
-    const storedUserInfo = getCookie('userInfo');
-    if (storedUserInfo) {
-      const userInfoArray = storedUserInfo.split('|');
-      if (userInfoArray[0] === userName) {
-        return userInfoArray[1];
+        message = `<span class="username" style="color: ${userColor};">${userName}:</span> ${parseMessage(message)}`;
+        socket.emit('chat message', message);
+        input.value = '';
       }
     }
-    // If color is not found, return black as default
-    return 'black';
-  }
 
-  // Initialize the chat app
-  window.onload = function() {
-    // Check for existing user information in cookies
-    const storedUserInfo = getCookie('userInfo');
-    if (storedUserInfo) {
-      const userInfoArray = storedUserInfo.split('|');
-      userName = userInfoArray[0];
-      displayUserInfo(userName);
-    } else {
-      // Prompt user for name if not found in cookies
-      do {
-        userName = prompt('Please enter your name:');
-      } while (!userName);
-      // Generate a random color for the user
-      const userColor = getRandomColor();
-      // Store user information in cookies
-      document.cookie = `userInfo=${userName}|${userColor}`;
-      displayUserInfo(userName, userColor);
+    // Function to send an image
+    function sendImage(file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imgHTML = `<span class="username" style="color: ${getUserColor(userName)};">${userName}:</span> <img src="${event.target.result}" alt="Image" style="max-width: 100%; border-radius: 10px;">`;
+        socket.emit('chat message', imgHTML);
+        fileInput.value = '';
+      };
+      reader.readAsDataURL(file);
     }
-  };
 
-</script>
+    // Function to add a message to the chat
+    function addMessageToChat(msg) {
+      const item = document.createElement('li');
+      item.innerHTML = msg;
+      messages.appendChild(item);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    // Function to detect and format links in messages
+    function parseMessage(message) {
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      return message.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" class="link">${url}</a>`;
+      });
+    }
+
+    // Function to display user information
+    function displayUserInfo(userName, userColor) {
+      userInfoDiv.innerHTML = `Logged in as: <span class="username" style="color: ${userColor};">${userName}</span>`;
+    }
+
+    // Function to get the value of a cookie
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Function to generate a random color
+    function getRandomColor() {
+      const letters = '0123456789ABCDEF';
+      let color = '#';
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // Function to retrieve the color associated with a user from the cookie
+    function getUserColor(userName) {
+      const storedUserInfo = getCookie('userInfo');
+      if (storedUserInfo) {
+        const userInfoArray = storedUserInfo.split('|');
+        if (userInfoArray[0] === userName) {
+          return userInfoArray[1];
+        }
+      }
+      // If color is not found, return black as default
+      return 'black';
+    }
+
+    // Initialize the chat app
+    window.onload = function() {
+      // Check for existing user information in cookies
+      const storedUserInfo = getCookie('userInfo');
+      if (storedUserInfo) {
+        const userInfoArray = storedUserInfo.split('|');
+        userName = userInfoArray[0];
+        const userColor = userInfoArray[1];
+        displayUserInfo(userName, userColor);
+      } else {
+        // Prompt user for name if not found in cookies
+        do {
+          userName = prompt('Please enter your name:');
+        } while (!userName);
+        // Generate a random color for the user
+        const userColor = getRandomColor();
+        // Store user information in cookies
+        document.cookie = `userInfo=${userName}|${userColor}`;
+        displayUserInfo(userName, userColor);
+      }
+      // Notify the server of the new user
+      socket.emit('user connected', userName);
+    };
+  </script>
 </body>
 </html>

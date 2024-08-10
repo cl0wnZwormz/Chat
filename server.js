@@ -12,6 +12,9 @@ app.use(express.static('public'));
 // Array to store chat messages
 const chatHistory = [];
 
+// Array to store connected users
+let onlineUsers = [];
+
 // Socket.IO connection handler
 io.on('connection', (socket) => {
     console.log('A user connected');
@@ -19,18 +22,26 @@ io.on('connection', (socket) => {
     // Send chat history to new client
     socket.emit('chat history', chatHistory);
 
+    // Handle new user connection
+    socket.on('user connected', (userName) => {
+        socket.userName = userName;
+        onlineUsers.push(userName);
+        io.emit('online users', onlineUsers);
+    });
+
     // Handle incoming messages
     socket.on('chat message', (msg) => {
         console.log('Message:', msg);
-        // Broadcast the message to all connected clients
         io.emit('chat message', msg);
-        // Add message to chat history
         chatHistory.push(msg);
     });
 
     // Handle disconnection
     socket.on('disconnect', () => {
         console.log('A user disconnected');
+        // Remove user from the online users array and update the list
+        onlineUsers = onlineUsers.filter((user) => user !== socket.userName);
+        io.emit('online users', onlineUsers);
     });
 });
 

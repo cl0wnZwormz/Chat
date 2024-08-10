@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gravity Falls Chat</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/dist/emoji-picker-element.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Color+Emoji" rel="stylesheet">
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -19,6 +20,10 @@
       background-size: cover;
       background-repeat: no-repeat;
       position: relative; /* Ensure absolute positioning works */
+    }
+
+    emoji-picker {
+      --emoji-font-family: "Noto Color Emoji";
     }
 
     #sign-wrapper {
@@ -37,23 +42,35 @@
     }
 
     #container {
-      background-color: #ffffff;
+      background-color: #0C0C0C;
       border-radius: 15px; /* Slightly more rounded corners */
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
       width: 600px; /* Increased width for a larger chat area */
       height: 700px; /* Increased height for a larger chat area */
-      overflow: hidden;
+      overflow: hidden; /* Hides any content that overflows */
       display: flex;
       flex-direction: column;
       position: relative; /* For proper stacking context */
     }
 
+    #container * {
+      box-sizing: border-box; /* Ensures padding and border are included in width/height */
+    }
+
+    /* Optional: Adjust any child elements to fit within the container */
+    #container .child-element {
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden; /* Ensures child content doesn't overflow */
+    }
+
     #online-users {
       padding: 15px;
-      background-color: #f0e4d7; /* Slightly lighter background */
-      border-bottom: 1px solid #ddd;
+      background-color: #250a13; /* Slightly lighter background */
+      border-bottom: none;
       font-family: 'Comic Sans MS', sans-serif; /* Fun, whimsical font */
       font-size: 18px; /* Larger font size */
+      color: #ffffff;
     }
 
     #messages {
@@ -62,8 +79,8 @@
       margin: 0;
       overflow-y: auto;
       flex: 1;
-      font-family: 'Comic Sans MS', sans-serif;
-      color: #333;
+      font-family: 'Comic Sans MS', sans-serif, 'Noto Color Emoji';
+      color: #ffffff;
       font-size: 16px; /* Larger font size */
     }
 
@@ -72,18 +89,21 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background-color: #f5eade;
-      border-top: 1px solid #ddd;
+      background-color: #250a13;
+      border-top: none;
       font-family: 'Comic Sans MS', sans-serif;
     }
 
     #input {
       flex: 1;
       padding: 12px;
-      border: 2px solid #333;
+      border: none;
+      font-family: 'Noto Color Emoji', 'Comic Sans MS', sans-serif;
       border-radius: 20px;
       outline: none;
+      background-color: #530023;
       font-size: 18px; /* Larger font size */
+      color: white;
     }
 
     #input:focus {
@@ -104,6 +124,7 @@
       transition: background-color 0.3s ease;
       font-family: 'Comic Sans MS', sans-serif;
       font-size: 16px; /* Larger font size */
+      margin-left: 15px; /* Add margin to the left of #submit to create space */
     }
 
     #submit:hover {
@@ -114,6 +135,15 @@
       cursor: pointer;
       margin-right: 15px; /* Larger margin */
       font-size: 28px; /* Larger emoji icon */
+      border: none;
+      border-radius: 20px;
+      padding: 7px 20px; /* Larger padding */
+      background-color: #aa8c70;
+      color: #fff;
+    }
+
+    #etogglebtn:hover {
+      background-color: #6b553b;
     }
 
     .username {
@@ -128,12 +158,29 @@
     }
 
     .tooltip {
+      position: absolute; /* Ensure it's positioned relative to its closest positioned ancestor */
+      z-index: 1000; /* Ensure it appears above other elements */
+      display: none; /* Initially hidden */
+      background-color: #ff000000; /* Add a background color */
+      padding: 10px; /* Add padding for content spacing */
+      border: none;
+      border-radius: 0px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for better visibility */
+    }
+
+    .tooltip.shown {
+      display: flex; /* Show when 'shown' class is present */
+    }
+
+    /* Optional: adjust the tooltip’s placement more accurately */
+    .tooltip::before {
+      content: ''; /* Create an arrow */
       position: absolute;
-      z-index: 1000;
+      top: 100%; /* Place it below the tooltip */
+      left: 50%; /* Center horizontally */
+      transform: translateX(-50%); /* Center arrow horizontally */
     }
-    .tooltip:not(.shown) {
-      display: none;
-    }
+
   </style>
 </head>
 <body>
@@ -163,18 +210,31 @@
     // Initialize Popper for the tooltip
     const button = document.getElementById('etogglebtn');
     const tooltip = document.querySelector('.tooltip');
-    Popper.createPopper(button, tooltip);
+
+    // Initialize Popper.js
+    const popperInstance = Popper.createPopper(button, tooltip, {
+      placement: 'top', // Position the tooltip above the button
+      modifiers: [
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 10], // Adjust the distance from the button
+          },
+        },
+      ],
+    });
 
     button.onclick = () => {
       tooltip.classList.toggle('shown');
+      if (tooltip.classList.contains('shown')) {
+        popperInstance.update(); // Update Popper.js position when shown
+      }
     };
-  
-    // Insert emoji into the text input from the tooltip
+
     document.querySelector('emoji-picker').addEventListener('emoji-click', e => {
       const input = document.querySelector('input');
       insertText(input, e.detail.unicode);
-      // Hide the tooltip after selecting an emoji
-      tooltip.classList.toggle('shown');
+      tooltip.classList.remove('shown'); // Hide the tooltip after emoji selection
     });
   </script>
   <script type="module">
@@ -190,11 +250,6 @@
     const button = document.querySelector('button');
 
     let userName = '';
-
-    // Remove the emoji picker related code
-    // emojiPickerButton.onclick = () => {
-    //   tooltip.classList.toggle('shown');
-    // };
 
     // Add event listener for submitting the form to send a message
     form.addEventListener('submit', (e) => {
@@ -258,14 +313,44 @@
     function parseMessage(message) {
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       return message.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" class="link">${url}</a>`;
+        // Check if the URL is an image, video, or audio
+        if (isImage(url)) {
+          return `<img src="${url}" alt="Image" style="max-width: 100%; border-radius: 10px;">`;
+        } else if (isVideo(url)) {
+          return `<video controls style="max-width: 100%; border-radius: 10px;"><source src="${url}"></video>`;
+        } else if (isAudio(url)) {
+          return `<audio controls style="max-width: 100%; border-radius: 10px;"><source src="${url}" type="audio/mpeg"></audio>`;
+        } else {
+          return `<a href="${url}" target="_blank" class="link">${url}</a>`;
+        }
       });
+    }
+    // Function to check if a URL is an image
+    function isImage(url) {
+      // Remove query parameters and fragments from the URL
+      const cleanUrl = url.split('?')[0].split('#')[0];
+      return /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(cleanUrl);
+    }
+
+    // Function to check if a URL is a video
+    function isVideo(url) {
+      // Remove query parameters and fragments from the URL
+      const cleanUrl = url.split('?')[0].split('#')[0];
+      return /\.(mp4|webm|ogg)$/i.test(cleanUrl);
+    }
+
+    // Function to check if a URL is an audio file
+    function isAudio(url) {
+      // Remove query parameters and fragments from the URL
+      const cleanUrl = url.split('?')[0].split('#')[0];
+      return /\.(mp3)$/i.test(cleanUrl);
     }
 
     // Function to display user information
     function displayUserInfo(userName, userColor) {
-      userInfoDiv.innerHTML = `Logged in as: <span class="username" style="color: ${userColor};">${userName}</span>`;
+      userInfoDiv.innerHTML = `<span style="color: white;">Logged in as: </span><span class="username" style="color: ${userColor};">${userName}</span>`;
     }
+
 
     // Function to get the value of a cookie
     function getCookie(name) {
@@ -274,14 +359,27 @@
       if (parts.length === 2) return parts.pop().split(';').shift();
     }
 
-    // Function to generate a random color
+    const colorList = [
+      '#E0A596', // provided color
+      '#C47678', // provided color
+      '#A85A6F', // provided color
+      '#8C4167', // provided color
+      '#712D5E', // provided color
+      '#551C53', // provided color
+      '#310F39', // provided color
+      '#F4B2A4', // similar
+      '#D9787A', // similar
+      '#B74A66', // similar
+      '#9D3F5B', // similar
+      '#823751', // similar
+      '#6D2B43', // similar
+      '#5A1F34', // similar
+      '#4E1A2D'  // similar
+    ];
+
     function getRandomColor() {
-      const letters = '0123456789ABCDEF';
-      let color = '#';
-      for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-      }
-      return color;
+      const randomIndex = Math.floor(Math.random() * colorList.length);
+      return colorList[randomIndex];
     }
 
     // Function to retrieve the color associated with a user from the cookie
